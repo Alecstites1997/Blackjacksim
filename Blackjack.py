@@ -9,23 +9,11 @@ Clubs = chr(9824)
 Spades = chr(9827)
 Backside = 'Backside'
 
-print(f'''Blackjack, by Al Sweigart al@inventwithpython.com
-     Rules:
-      Try to get as close to 21 without going over.
-      Kings, Queens, and Jacks are worth 10 points.
-      Aces are worth 1 or 11 points.
-      Cards 2 through 10 are worth their face value.
-      (H)it to take another card.
-      (S)tand to stop taking cards.
-      On your first play, you can (D)ouble down to increase your bet
-      but must hit exactly one more time before standing.
-      In case of a tie, the bet is returned to the player.
-     The dealer stops hitting at 17.''')
-
-
 def main ():
     money = 5000
-    drawn_cards = drawfromdeck(num_cards=2)
+    deck = createfulldeck()
+    playerdrawn_cards = drawfromdeck(deck, numcards = 2)
+    dealerdrawn_cards = drawfromdeck(deck, numcards = 1)
     while True:
         if money <= 0:
             print(f'''You are broke, you should leave''')
@@ -37,15 +25,19 @@ def main ():
                print(f'''You current have {money}''')
                bet = int(getbet(money))
                remainingmoney = (money - bet)
-               print(f''' Your current bet is {bet} and your remaining amount is {remainingmoney}''')
+               print(f'''Your current bet is {bet} and your remaining amount is {remainingmoney}''')
                print(f'''Your cards are: ''')
-               for i in range(2):
-                  for rank, suit in drawn_cards:
-                     cardcreator(rank, suit)
-                     print()
+               for rank, suit in playerdrawn_cards:
+                  cardcreator(rank, suit)
+                  print()
+               print(f'''Your current total is {handvalue(playerdrawn_cards)}''')
+               
                print(f'''The dealer's cards are: ''')
-               for i in range(2):
-                  drawfromdeck()
+               for rank, suit in dealerdrawn_cards:
+                  cardcreator(rank, suit)
+                  print()
+            
+                  
       
 
             
@@ -59,30 +51,48 @@ def main ():
               break
 
 def getbet(maxbet):
-  print(f'''Your maximum bet is currently {maxbet}''')
-  currentbet = input('What would you like your bet to be for this hand?')
+  print(f'''Your maximum bet is currently {maxbet} ''')
+  currentbet = input('What would you like your bet to be for this hand? ')
   if int(currentbet) > int(maxbet):
-     print('You are betting more money than you have, please try again')
-     currentbet = input('What would you like your bet to be for this hand?')
+     print('You are betting more money than you have, please try again ')
+     currentbet = input('What would you like your bet to be for this hand? ')
   elif int(currentbet) <= int(maxbet):
      print('Great, lets play!')
   return currentbet
 
-def drawfromdeck(num_cards=2):
-   freshdeck = []
-   drawndeck = []
-   suits = ['Hearts', 'Clubs', 'Spades', 'Diamonds']
+def createfulldeck():
+   deck = []
+   suits = [Hearts, Clubs, Spades, Diamonds]
    ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10','J', 'Q', 'K']
 
    for suit in suits:
       for rank in ranks:
-        freshdeck.append(f'''{rank},{suit}''')
-   i = 0
-   while i <= 1:
-      drawncards = (random.choice(freshdeck))
-      i += 1
-   drawncards = random.sample(freshdeck, num_cards)
-   return(drawncards)
+        deck.append((rank,suit))
+   return deck
+
+def drawfromdeck(deck, numcards=2):
+   drawn = []
+   for _ in range(numcards):
+      card = deck.pop()
+      drawn.append(card)
+   return drawn
+
+def handvalue(cards):
+   value = 0
+   aces = 0
+   for rank, suit in cards:
+      if rank in ['J', 'Q', 'K']:
+         value += 10
+      elif rank == 'A':
+         aces += 1
+         value += 11
+      else:
+         value += int(rank)
+   if aces != 0:
+      acevalue = input(f'''You are currently at {value}, would you like to have ace count as 11 or 1?''')
+      if acevalue == '1':
+         value -= 10
+   return value
 
 def cardcreator(rank, suit):
    if len(str(rank)) == 1:
