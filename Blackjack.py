@@ -10,33 +10,49 @@ Spades = chr(9827)
 Backside = 'Backside'
 
 def main ():
+   #Define wallat and cards
     money = 5000
     deck = createfulldeck()
     playerdrawn_cards = drawfromdeck(deck, numcards = 2)
     dealerdrawn_cards = drawfromdeck(deck, numcards = 1)
+    #Main loop for gameplay
     while True:
         if money <= 0:
             print(f'''You are broke, you should leave''')
             break
+        #Loop path if you still have money
         elif money > 0:
             wanttoplay = input(f'''You still have money so do you want to play? ''')
             if wanttoplay == 'yes':
                 #outline of the game
                print(f'''You current have {money}''')
+               #What is my bet going to be?
                bet = int(getbet(money))
                remainingmoney = (money - bet)
                print(f'''Your current bet is {bet} and your remaining amount is {remainingmoney}''')
                print(f'''Your cards are: ''')
+               #Draw 2 cards from the deck
                for rank, suit in playerdrawn_cards:
                   cardcreator(rank, suit)
                   print()
-               print(f'''Your current total is {handvalue(playerdrawn_cards)}''')
+               print(f'''Your current total is {playerhandvalue(playerdrawn_cards)}''')
                
                print(f'''The dealer's cards are: ''')
+               #Drawing 2 cards from the deck for the dealer
                for rank, suit in dealerdrawn_cards:
                   cardcreator(rank, suit)
                   print()
-            
+               
+               #Hit/stay logic
+               if handvalue(playerdrawn_cards) <= 21:
+                  hit = input(f'''Do you want to hit again as dealer is showing {dealerhandvalue(dealerdrawn_cards)}? ''')
+                  while hit == 'yes':
+                     new_card = drawfromdeck(deck, numcards = 1)
+                     playerdrawn_cards.append(new_card)
+                     print(new_card)
+                     break
+                     
+
                   
       
 
@@ -71,13 +87,25 @@ def createfulldeck():
    return deck
 
 def drawfromdeck(deck, numcards=2):
-   drawn = []
    for _ in range(numcards):
-      card = deck.pop()
+      card = random.choice(deck)
       drawn.append(card)
    return drawn
 
-def handvalue(cards):
+def dealerhandvalue(cards):
+   value = 0
+   aces = 0
+   for rank, suit in cards:
+      if rank in ['J', 'Q', 'K']:
+         value += 10
+      elif rank == 'A':
+         aces += 1
+         value += 11
+      else:
+         value += int(rank)
+   return value
+
+def playerhandvalue(cards):
    value = 0
    aces = 0
    for rank, suit in cards:
