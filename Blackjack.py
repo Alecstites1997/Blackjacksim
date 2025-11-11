@@ -10,7 +10,7 @@ Spades = chr(9827)
 Backside = 'Backside'
 
 def main ():
-   #Define wallat and cards
+   #Define wallet and cards
     money = 5000
     deck = createfulldeck()
     playerdrawn_cards = drawfromdeck(deck, numcards = 2)
@@ -38,33 +38,55 @@ def main ():
                print(f'''Your current total is {playerhandvalue(playerdrawn_cards)}''')
                
                print(f'''The dealer's cards are: ''')
-               #Drawing 2 cards from the deck for the dealer
+               #Drawing first card from the deck for the dealer
                for rank, suit in dealerdrawn_cards:
                   cardcreator(rank, suit)
                   print()
                
                #Hit/stay logic
-               if handvalue(playerdrawn_cards) <= 21:
+               if playerhandvalue(playerdrawn_cards) <= 21:
                   hit = input(f'''Do you want to hit again as dealer is showing {dealerhandvalue(dealerdrawn_cards)}? ''')
                   while hit == 'yes':
                      new_card = drawfromdeck(deck, numcards = 1)
-                     playerdrawn_cards.append(new_card)
-                     print(new_card)
+                     playerdrawn_cards.append(new_card[0])
+                     for rank, suit in new_card:
+                        cardcreator(rank, suit)
+                        print()
+                        print(f'''After that hit, your current value is {playerhandvalue(playerdrawn_cards)}''')
+                     hit = input(f'''Do you want to hit again as dealer is showing {dealerhandvalue(dealerdrawn_cards)}? ''')
+                     dealernewcard = drawfromdeck(deck, numcards = 1)
+                     dealerdrawn_cards.append(dealernewcard[0])
+                     for rank, suit in dealerdrawn_cards:
+                        cardcreator(rank, suit)
+                     finaldealervalue = dealerhandvalue(dealerdrawn_cards)
+                     print(finaldealervalue)
+                     winlosslogic(playerdrawn_cards,dealerdrawn_cards)
+                  while hit == 'no':
+                     dealernewcard = drawfromdeck(deck, numcards = 1)
+                     dealerdrawn_cards.append(dealernewcard[0])
+                     for rank, suit in dealerdrawn_cards:
+                        cardcreator(rank,suit)
+                     finaldealervalue = dealerhandvalue(dealerdrawn_cards)
+                     if finaldealervalue <= 17:
+                        print(f'''Dealer has less than 17, so Dealer will draw another card''')
+                        dealernewcard = drawfromdeck(deck, numcards = 1)
+                        dealerdrawn_cards.append(dealernewcard[0])
+                        for rank, suit in dealerdrawn_cards:
+                           cardcreator(rank,suit)
+                        finaldealervalue = dealerhandvalue(dealerdrawn_cards)
+
+                     print(f'''The dealer is currently at {finaldealervalue}, while you are at {playerhandvalue(playerdrawn_cards)}''')
+                     winlosslogic(playerdrawn_cards,dealerdrawn_cards)
                      break
-                     
-
-                  
-      
-
-            
-
-         
-
-
-
+                           
             else:
               print('Thanks for playing!')
               break
+def winlosslogic(playerdrawn_cards, dealerdrawn_cards):
+   if playerhandvalue(playerdrawn_cards) > 21:
+      print(f'''You busted''')
+   elif playerhandvalue(playerdrawn_cards) <= 21 and playerhandvalue(playerdrawn_cards) > dealerhandvalue(dealerdrawn_cards):
+      print(f'''You won!''')
 
 def getbet(maxbet):
   print(f'''Your maximum bet is currently {maxbet} ''')
@@ -87,8 +109,9 @@ def createfulldeck():
    return deck
 
 def drawfromdeck(deck, numcards=2):
+   drawn = []
    for _ in range(numcards):
-      card = random.choice(deck)
+      card = deck.pop(random.randint(0, len(deck)-1))
       drawn.append(card)
    return drawn
 
@@ -103,6 +126,10 @@ def dealerhandvalue(cards):
          value += 11
       else:
          value += int(rank)
+   while aces > 0 and value > 21:
+      value -= 10
+      aces -= 1
+
    return value
 
 def playerhandvalue(cards):
@@ -116,10 +143,9 @@ def playerhandvalue(cards):
          value += 11
       else:
          value += int(rank)
-   if aces != 0:
-      acevalue = input(f'''You are currently at {value}, would you like to have ace count as 11 or 1?''')
-      if acevalue == '1':
+   while aces > 0 and value > 21:
          value -= 10
+         aces -= 1
    return value
 
 def cardcreator(rank, suit):
